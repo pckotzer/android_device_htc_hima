@@ -34,9 +34,6 @@ TARGET_2ND_CPU_ABI2 := armeabi
 TARGET_2ND_CPU_VARIANT := cortex-a53.a57
 
 TARGET_BOARD_PLATFORM := msm8994
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno430
-
-TARGET_USES_64_BIT_BINDER := true
 BUILD_BROKEN_DUP_RULES := true
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 BUILD_BROKEN_PREBUILT_ELF_FILES := true
@@ -48,7 +45,8 @@ TARGET_NO_BOOTLOADER := true
 # Kernel
 BOARD_DTBTOOL_ARGS := -2
 BOARD_KERNEL_BASE := 0x00078000
-BOARD_KERNEL_CMDLINE := console=none androidboot.hardware=qcom user_debug=31 ehci-hcd.park=3 boot_cpus=0-3 androidusb.pid=0x065d androidkey.dummy=1 androidtouch.htc_event=1 disk_mode_enable=1
+BOARD_KERNEL_CMDLINE := console=none androidboot.hardware=qcom user_debug=31 ehci-hcd.park=3 boot_cpus=0-5 androidusb.pid=0x065d  androidboot.init_fatal_reboot_target=recovery androidkey.dummy=1 androidtouch.htc_event=1 disk_mode_enable=1 debug=0 nowatchdog nmi_watchdog=0 no_debug_objects dyndbg=0 module.dyndbg=0
+#BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 BOARD_KERNEL_PAGESIZE := 4096
 BOARD_MKBOOTIMG_ARGS := --kernel_offset 0x00008000 --ramdisk_offset 0x01f88000 --tags_offset 0x01d88000
@@ -56,6 +54,9 @@ BOARD_RAMDISK_OFFSET := 0x02000000
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_CLANG_COMPILE := false
 TARGET_KERNEL_SOURCE := kernel/htc/msm8994
+TARGET_KERNEL_NEW_GCC_COMPILE := true
+KERNEL_TOOLCHAIN := $(shell pwd)/prebuilts/gcc/linux-x86/aarch64/eva/bin
+KERNEL_TOOLCHAIN_PREFIX := aarch64-elf-
 TARGET_KERNEL_CONFIG := hima_defconfig
 
 # Device Asserts
@@ -65,6 +66,7 @@ TARGET_OTA_ASSERT_DEVICE := htc_himaul,htc_himauhl,htc_himaulatt,htc_himawhl,htc
 AUDIO_FEATURE_ENABLED_ACDB_LICENSE := true
 AUDIO_FEATURE_ENABLED_COMPRESS_CAPTURE := true
 AUDIO_FEATURE_ENABLED_COMPRESS_VOIP := true
+AUDIO_FEATURE_ENABLED_ANC_HEADSET := true
 AUDIO_FEATURE_ENABLED_DS2_DOLBY_DAP := true
 AUDIO_FEATURE_ENABLED_DTS_EAGLE := true
 AUDIO_FEATURE_ENABLED_EXTENDED_COMPRESS_FORMAT := true
@@ -87,10 +89,10 @@ USE_CUSTOM_AUDIO_POLICY := 1
 USE_XML_AUDIO_POLICY_CONF := 1
 
 # Bluetooth
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(PLATFORM_PATH)/bluetooth
 BOARD_CUSTOM_BT_CONFIG := $(PLATFORM_PATH)/bluetooth/libbt_vndcfg.txt
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
+#BOARD_VNDK_VERSION := 33
 
 # Camera
 TARGET_SPECIFIC_CAMERA_PARAMETER_LIBRARY := libcamera_parameters_ext_hima
@@ -117,19 +119,20 @@ ifeq ($(HOST_OS),linux)
 endif
 
 # Display
+BOARD_USES_ADRENO := true
+USE_OPENGL_RENDERER := true
+TARGET_USES_GRALLOC1 := true
 TARGET_SCREEN_DENSITY := 420
 TARGET_USES_C2D_COMPOSITION := true
 TARGET_USES_ION := true
 TARGET_DISABLE_POSTRENDER_CLEANUP := true
-TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x02000000U
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS := 0x2000U | 0x02000000U
+VSYNC_EVENT_PHASE_OFFSET_NS := 2000000
+SF_VSYNC_EVENT_PHASE_OFFSET_NS := 6000000
 
 MAX_EGL_CACHE_KEY_SIZE := 12*1024
 MAX_EGL_CACHE_SIZE := 2048*1024
-
-OVERRIDE_RS_DRIVER:= libRSDriver_adreno.so
-
-# Encryption
-TARGET_HW_DISK_ENCRYPTION := true
+HWUI_COMPILE_FOR_PERF := true
 
 # Filesystem
 BOARD_FLASH_BLOCK_SIZE := 262144 # (BOARD_KERNEL_PAGESIZE * 64)
@@ -152,6 +155,7 @@ BOARD_ROOT_EXTRA_FOLDERS := \
     persist
 
 # HIDL
+#DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := $(DEVICE_PATH)/framework_compatibility_matrix.xml
 DEVICE_MANIFEST_FILE := $(PLATFORM_PATH)/manifest.xml
 DEVICE_MATRIX_FILE := $(PLATFORM_PATH)/compatibility_matrix.xml
 PRODUCT_ENFORCE_VINTF_MANIFEST_OVERRIDE := true
@@ -170,8 +174,8 @@ TARGET_HAS_MEMFD_BACKPORT := true
 TARGET_PROVIDES_LIBLIGHT := true
 
 # Power
-TARGET_RPM_SYSTEM_STAT := /d/rpm_stats
-TARGET_USES_INTERACTION_BOOST := true
+TARGET_HAS_LEGACY_POWER_STATS := true
+TARGET_HAS_NO_WIFI_STATS := true
 
 # Properties
 TARGET_SYSTEM_PROP :=  $(PLATFORM_PATH)/system.prop
@@ -188,6 +192,8 @@ BOARD_GLOBAL_CFLAGS += -DCOMPAT_SENSORS_M
 # SELinux
 include device/qcom/sepolicy-legacy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += $(PLATFORM_PATH)/sepolicy
+#BOARD_SEPOLICY_DIRS += $(PLATFORM_PATH)/sepolicy-minimal
+#SELINUX_IGNORE_NEVERALLOWS := true
 
 # Shims
 TARGET_LD_SHIM_LIBS := \
@@ -202,7 +208,8 @@ TARGET_LD_SHIM_LIBS := \
     /vendor/lib/libmmcamera_chromaflash_lib.so|/vendor/lib/libshim_chromaflash.so \
     /vendor/lib/libmmcamera_stillmore_lib.so|/vendor/lib/libshim_stillmore.so \
     /vendor/lib/libwvhidl.so|/vendor/lib/libprotobuf-cpp-lite.so \
-    /vendor/lib/mediadrm/libwvdrmengine.so|/vendor/lib/libprotobuf-cpp-lite.so
+    /vendor/lib/mediadrm/libwvdrmengine.so|/vendor/lib/libprotobuf-cpp-lite.so \
+    /vendor/lib64/libmm-qdcm-diag.so|libshims_thermal.so
 
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \

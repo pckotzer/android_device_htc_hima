@@ -1,0 +1,4 @@
+type battery_cpu, domain, coredomain;
+type battery_cpu_exec, system_file_type, exec_type, file_type;
+
+init_daemon_domain(battery_cpu)

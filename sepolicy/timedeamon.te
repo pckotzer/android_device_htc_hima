@@ -1,2 +1,4 @@
 allow init rtc_device:chr_file ioctl;
+allow time_daemon default_prop:file { getattr open read };
+
 

@@ -77,13 +77,6 @@ static void* video_encode_hint_function(void* arg) {
     // if should_enable is true but counter is different, another thread owns hint
     // if should_enable is false, we've already quit the camera
     if (video_encode_hint_should_enable == true && video_encode_hint_counter == expected_counter) {
-        /* sched and cpufreq params
-           A53: 4 cores online at 1.2GHz max, 960 min
-           A57: 4 cores online at 384 max, 384 min
-        */
-        int resource_values[] = {0x150C, 0x1F03, 0x2303};
-        perform_hint_action(new_hint_id,
-                            resource_values, sizeof(resource_values)/sizeof(resource_values[0]));
         cur_hint_id = new_hint_id;
         video_encode_hint_is_enabled = true;
         video_encode_hint_should_enable = false;
@@ -190,7 +183,7 @@ int set_interactive_override(struct power_module *module, int on)
             (strlen(governor) == strlen(INTERACTIVE_GOVERNOR))) {
             // sched upmigrate = 99, sched downmigrate = 95
             // keep the big cores around, but make them very hard to use
-            int resource_values[] = {0x4E63, 0x4F5F};
+            int resource_values[] = {0x4F5F, 0x4F5F};
             if (!display_hint_sent) {
                 perform_hint_action(DISPLAY_STATE_HINT_ID,
                 resource_values, sizeof(resource_values)/sizeof(resource_values[0]));

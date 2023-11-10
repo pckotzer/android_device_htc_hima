@@ -1,5 +1,6 @@
 # Audio
 /dev/htc-acoustic               u:object_r:audio_device:s0
+/dev/rt5506                     u:object_r:audio_device:s0
 /dev/rt5501                     u:object_r:audio_device:s0
 /dev/tfa9887                    u:object_r:audio_device:s0
 /dev/tfa9887l                   u:object_r:audio_device:s0
@@ -16,6 +17,7 @@
 /sys/devices/soc\.0/qpnp-fg-19/power_supply/bms(/.*)?                   u:object_r:sysfs_battery_supply:s0
 /sys/devices/soc\.0/msm-bcl-16/power_supply/fg_adc(/.*)?                u:object_r:sysfs_battery_supply:s0
 /sys/devices/soc\.0/qcom,bcl\.[0-9]+/power_supply/bcl(/.*)?             u:object_r:sysfs_power_supply:s0
+
 
 # Camera
 /sys/android_camera_awb_cal(/.*)?           u:object_r:sysfs_camera_awb_cal:s0
@@ -34,6 +36,9 @@
 /data/misc/cw_calibrator_mag.ini             u:object_r:data_misc_calibrator_file:s0
 /data/misc/cw_calibrator_proximty.ini        u:object_r:data_misc_calibrator_file:s0
 
+# Dynamic Cpu scale on battery lvl
+/system/bin/battery_cpu\.sh                 u:object_r:battery_cpu_exec:s0
+
 # Debugfiles
 /d/rpm_stats(/.*)?                           u:object_r:rpm_stats_debug_file:s0
 /sys/kernel/debug/rmt_storage(/.*)?          u:object_r:rmt_storage_debug_file:s0
@@ -43,7 +48,7 @@
 
 # DRM
 /vendor/bin/hw/android.hardware.configstore@1\.1-service       u:object_r:hal_configstore_default_exec:s0
-/vendor/bin/hw/android.hardware.drm@1\.4-service\.clearkey     u:object_r:hal_drm_default_exec:s0
+/vendor/bin/hw/android.hardware.drm-service\.clearkey     u:object_r:hal_drm_default_exec:s0
 
 # Encryption
 /dev/block/platform/soc.0/f9824900.sdhci/by-name/extra         u:object_r:metadata_block_device:s0
@@ -60,9 +65,6 @@
 
 # FRP partition
 /dev/block/platform/soc.0/f9824900.sdhci/by-name/frp           u:object_r:frp_block_device:s0
-
-# misc
-/system/bin/clean_scratch_files                         u:object_r:clean_scratch_files_exec:s0
 
 # Modem partitions
 /dev/block/platform/soc.0/f9824900.sdhci/by-name/cdma_record   u:object_r:modem_efs_partition_device:s0

@@ -1,4 +1,9 @@
 allow hal_audio_default dts_data_file:dir rw_dir_perms;
 allow hal_audio_default dts_data_file:file create_file_perms;
 allow hal_audio_default dts_data_file:file rw_file_perms;
-
+allow hal_audio_default audio_prop:file { getattr open read };
+allow hal_audio_default default_prop:file { getattr open read };
+# Allow ViPER4Android in enforcing mode.
+allow hal_audio hal_audio:process { execmem };
+allow hal_audio audio_data_file:dir { search };
+allow hal_audio_default tmpfs:file { read write execute };

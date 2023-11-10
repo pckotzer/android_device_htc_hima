@@ -2,22 +2,31 @@ on boot
     # add a cpuset for the camera daemon
     # we want all the little cores for camera
     mkdir /dev/cpuset/camera-daemon
-    write /dev/cpuset/camera-daemon/cpus 0
-    write /dev/cpuset/camera-daemon/mems 0
+    write /dev/cpuset/camera-daemon/cpus 4-6
+    write /dev/cpuset/camera-daemon/mems 4-6
     chown system system /dev/cpuset/camera-daemon
     chown system system /dev/cpuset/camera-daemon/tasks
     chmod 0664 /dev/cpuset/camera-daemon/tasks
-
+    chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
+    chmod 0660 /sys/module/radio_iris_transport/parameters/fmsmd_set
+    chown system system /sys/module/radio_iris_transport/parameters/fmsmd_set
+    chmod 0660 /sys/module/radio_iris_transport/parameters/fmsmd_set
     # update foreground cpuset now that processors are up
     # reserve CPU 3 for the top app and camera daemon
-    write /dev/cpuset/foreground/cpus 0-2,4-7
-    write /dev/cpuset/background/cpus 0
-    write /dev/cpuset/system-background/cpus 0-2
+    write /dev/cpuset/foreground/cpus 0-7
+    write /dev/cpuset/background/cpus 0-3
+    write /dev/cpuset/system-background/cpus 0-3
     write /dev/cpuset/top-app/cpus 0-7
-    write /dev/cpuset/camera-daemon/cpus 0-3
+    write /dev/cpuset/camera-daemon/cpus 4-6
+    write /dev/cpuset/restricted/cpus 0-3
+    
+    
+on post-fs-data
+    mkdir /data/vendor/fm 0770 system system
+    chmod 0770 /data/vendor/fm
 
 on property:sys.boot_completed=1
-    setprop sys.io.scheduler "cfq"
+    setprop sys.io.scheduler "zen"
 
     # Disable retention on HTC
     write /sys/module/lpm_levels/system/a53/cpu0/retention/idle_enabled 0
@@ -36,50 +45,44 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpu6/online 0
     write /sys/devices/system/cpu/cpu7/online 0
 
-    # Limit A57 max freq from msm_perf module in case CPU 4 is offline
-    write /sys/module/msm_performance/parameters/cpu_max_freq "4:960000 5:960000 6:960000 7:960000"
 
     # disable thermal bcl hotplug to switch governor
     write /sys/module/msm_thermal/core_control/enabled 0
 
     # configure governor settings for little cluster
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "interactive"
-    # must restore after interactive
+    
+    # must restore after Ondemand
     restorecon -R /sys/devices/system/cpu
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif 1
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "0 600000:19000 672000:20000 960000:24000 1248000:38000"
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load 93
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate 40000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_slack 90000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq 672000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy 0
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "29 384000:88 600000:90 672000:92 864000:22 960000:93 1248000:98"
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time 60000
-    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis 80000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 384000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1344000
-
+    # Define max clockspeed for littel cpus 
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 302000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1843200
+    
+    # Make sure to enabel all cpus 
+    write /sys/devices/system/cpu/cpu1/online 1
+    write /sys/devices/system/cpu/cpu2/online 1
+    write /sys/devices/system/cpu/cpu3/online 1
+    write /sys/devices/system/cpu/cpu4/online 1
+    write /sys/devices/system/cpu/cpu5/online 1
+    write /sys/devices/system/cpu/cpu6/online 1
+    write /sys/devices/system/cpu/cpu7/online 1
+       
     # online CPU4
     write /sys/devices/system/cpu/cpu4/online 1
 
     # configure governor settings for big cluster
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "interactive"
-    # must restore after interactive
-    restorecon -R /sys/devices/system/cpu
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load 1
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif 1
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "20000 864000:30000 960000:40000 1248000:30000"
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load 99
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate 40000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack 90000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq 960000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy 0
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "70 864000:75 960000:90 1248000:99"
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time 40000
-    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis 80000
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 384000
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1248000
+    # must restore after impulse
+    # Define max clockspeed of big cores to 2Ghz theyre running now as normal default ones for foreground
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 302400
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2054400
+    
+    # Set Gpu to max 390mhz   
+    write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz-
+    write /sys/class/kgsl/kgsl-3d0/max_gpuclk "410000000"
+    
+    # Set Vibrator voltage level for calmer vibration, also on keyboard it fells better at this lvl
+    write /sys/class/timed_output/vibrator/voltage_level 2259
 
     # re-enable thermal and BCL hotplug
     write /sys/module/msm_thermal/core_control/enabled 1
@@ -87,43 +90,104 @@ on property:sys.boot_completed=1
     # enable LPM
     write /sys/module/lpm_levels/parameters/sleep_disabled 0
 
-    # change GPU initial power level from 305MHz(level 4) to 180MHz(level 5) for power savings
-    write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 5
+    # Tweak some virtual ram and ram management
+    write /proc/sys/vm/overcommit_ratio 80
+    write /proc/sys/vm/swappiness 75
+    write /proc/sys/vm/dirty_ratio 5
+    write /sys/block/zram0/max_comp_streams 8
+    write /proc/sys/vm/min_free_kbytes 3500
+    write /proc/sys/vm/dirty_expire_centisecs 80
+    write /proc/sys/vm/vfs_cache_pressure 180
+    write /proc/sys/vm/dirty_background_ratio 3
+    write /sys/block/loop0/queue/read_ahead_kb "3200"
+    write /sys/block/loop0/queue/rq_affinity "1"
+    write /sys/block/zram0/queue/read_ahead_kb "7168"
+    write /sys/block/zram0/queue/add_random "1"
+    write /sys/block/zram0/queue/rq_affinity "0"
+    write /sys/block/ram1/queue/read_ahead_kb "2240" 
+    write /sys/block/mmcblk0/queue/iosched/fifo_expire_async "100"
+    write /sys/block/mmcblk0/queue/iosched/fifo_expire_sync "40"
+    write /sys/block/mmcblk0/queue/iosched/target_latency "30"
+    write /sys/block/mmcblk0/queue/rq_affinity 0
+    write /sys/block/mmcblk0/queue/read_ahead_kb 1152
+   
+    # Bluelight filter by default (light) disabeld for now due LiveDisplay reset it after wake up
+    # write /sys/class/graphics/fb0/rgb "32768 32768 30301"
+    # chmod 0466 /sys/class/graphics/fb0/rgb
 
-    # set GPU default governor to msm-adreno-tz
-    write /sys/class/devfreq/fdb00000.qcom,kgsl-3d0/governor msm-adreno-tz
-
-    # plugin remaining A57s
-    write /sys/devices/system/cpu/cpu5/online 1
-    write /sys/devices/system/cpu/cpu6/online 1
-    write /sys/devices/system/cpu/cpu7/online 1
-
-    # android background processes are set to nice 10. Never schedule these on the a57s.
-    write /proc/sys/kernel/sched_upmigrate_min_nice 9
-
+    # Set some govenor settings for impulse (LITTEL) and  (big) one
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq "768000"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/screen_off_maxfreq "1344000"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/screen_off_maxfreq "1152000"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load "86"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay "0 600000:19000 768000:20000 960000:24000 1344000:38000"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads "78 768000:90 864000:92 600000:22 960000:93 1478000:98 1555000:99"
+    write /sys/devices/system/cpu/cpu0/cpufreq/ondemand/powersave_bias "10"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay "20000"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fastlane "0"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fastlane "0"
+    write /sys/devices/system/cpu/cpu0/cpufreq/interactive/fastlane_threshold "91"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/fastlane_threshold "82"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time "80000"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/powersave_bias "0"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads "72"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate "10000"   
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_slack "80000"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load "98"
+    write /sys/devices/system/cpu/cpu4/cpufreq/interactive/powersave_bias "1"
+    write /sys/devices/system/cpu/cpu0/cpufreq/hyper/sampling_down_factor "1"
+    write /sys/devices/system/cpu/cpu0/cpufreq/hyper/up_threshold "91"
+    write /sys/devices/system/cpu/cpu4/cpufreq/barry_allen/above_hispeed_delay "35800"
+    write /sys/devices/system/cpu/cpu4/cpufreq/barry_allen/hispeed_freq "864000"
+    write /sys/devices/system/cpu/cpu4/cpufreq/barry_allen/sampling_down_factor "23"
+    write /sys/devices/system/cpu/cpu4/cpufreq/barry_allen/target_loads "78
+    # write /sys/devices/system/cpu/cpu0/cpufreq/hyper/powersave_bias "55"
+    write /sys/devices/system/cpu/cpu0/cpufreq/chill/up_threshold "76"
+    write /sys/devices/system/cpu/cpu0/cpufreq/chill/down_threshold "35"
+    write /sys/module/workqueue/parameters/power_efficient "Y"
+    
+    # Some I/O Improvements, aka Tweaks
+    write /sys/block/mmcblk0/queue/rq_affinity 0
+    write /sys/block/loop0/queue/add_random "1"
+    
+    # Hide /unix for Magisk app detection    
+    chmod 440 /proc/net/unix
+    
+    # android background processes are set to nice 11. Never schedule these on the a57s.
+    write /proc/sys/kernel/sched_upmigrate_min_nice 11 
+    
     # Setting b.L scheduler parameters
     write /proc/sys/kernel/sched_migration_fixup 1
     write /proc/sys/kernel/sched_small_task 30
-    write /proc/sys/kernel/sched_mostly_idle_load 20
-    write /proc/sys/kernel/sched_mostly_idle_nr_run 3
     write /proc/sys/kernel/sched_upmigrate 95
     write /proc/sys/kernel/sched_downmigrate 85
     write /proc/sys/kernel/sched_window_stats_policy 2
     write /proc/sys/kernel/sched_ravg_hist_size 5
     write /proc/sys/kernel/sched_freq_inc_notify 400000
     write /proc/sys/kernel/sched_freq_dec_notify 400000
-
+    
+    # Devfreq
+    write /sys/class/devfreq/qcom,cpubw.34/governor bw_hwmon
+    restorecon -R /sys/class/devfreq/qcom,cpubw.34
+    write /sys/class/devfreq/qcom,mincpubw.35/governor cpufreq
+    
     #enable rps static configuration
-    write /sys/class/net/rmnet_ipa0/queues/rx-0/rps_cpus "0f"
+    write /sys/class/net/rmnet_ipa0/queues/rx-0/rps_cpus 0f
     write /sys/class/devfreq/qcom,cpubw.34/governor "bw_hwmon"
     write /sys/class/devfreq/qcom,mincpubw.35/governor "cpufreq"
-
+    
     rm /data/system/perfd/default_values
     start perfd
+    
+#on enable-low-power
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 960000
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1152000    
+    
+#on charger
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1920000
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2400000
 
-service perfd /vendor/bin/perfd
-    class main
-    user root
-    group root readproc
-    disabled
-    writepid /dev/cpuset/system-background/tasks
+    
+on property:hw.fm.init=*
+    write /sys/module/radio_iris_transport/parameters/fmsmd_set ${hw.fm.init}
+    

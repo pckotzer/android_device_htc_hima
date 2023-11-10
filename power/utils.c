@@ -42,7 +42,7 @@
 #define LOG_TAG "QCOMPowerHAL"
 #include <utils/Log.h>
 
-#define INTERACTION_BOOST
+//define INTERACTION_BOOST
 
 static void *qcopt_handle;
 static int (*perf_lock_acq)(unsigned long handle, int duration,
@@ -280,7 +280,7 @@ void undo_hint_action(int hint_id)
 
                 if (found_hint_data) {
                     if (perf_lock_rel(found_hint_data->perflock_handle) == -1)
-                        ALOGE("Perflock release failed.");
+                        ALOGE("Perflock release not succesfull.");
                 }
 
                 if (found_node->data) {

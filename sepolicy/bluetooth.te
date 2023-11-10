@@ -1,4 +1,6 @@
 allow bluetooth firmware_file:dir {open read search};
 allow bluetooth firmware_file:file {open read getattr};
 allow bluetooth sysfs:file write;
+allow bluetooth system_data_file:dir {search};
+allow bluetooth system_file:dir {search};
 

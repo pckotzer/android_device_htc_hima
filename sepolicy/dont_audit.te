@@ -1,2 +1,22 @@
 dontaudit system_server dalvikcache_data_file:file { execute write };
-
+dontaudit untrusted_app apex_mnt_dir:dir read;
+dontaudit untrusted_app build_bootimage_prop:file { getattr open };
+dontaudit untrusted_app init_exec:file getattr;
+dontaudit untrusted_app init_exec:lnk_file read;
+dontaudit untrusted_app mnt_sdcard_file:lnk_file read;
+dontaudit untrusted_app postinstall_mnt_dir:dir { getattr open read };
+dontaudit untrusted_app proc_tty_drivers:file { getattr open read };
+dontaudit untrusted_app proc_zoneinfo:file read;
+dontaudit untrusted_app qemu_hw_prop:file { getattr open };
+dontaudit untrusted_app rootfs:dir { open read };
+dontaudit untrusted_app serialno_prop:file { getattr open };
+dontaudit untrusted_app system_bootstrap_lib_file:file getattr;
+dontaudit untrusted_app system_dlkm_file:dir getattr;
+dontaudit untrusted_app apk_data_file:file execmod;
+dontaudit untrusted_app block_device:dir search;
+dontaudit untrusted_app build_bootimage_prop:file read;
+dontaudit untrusted_app serialno_prop:file read;
+dontaudit untrusted_app sysfs_android_usb:dir search;
+dontaudit untrusted_app sysfs_lowmemorykiller:dir search;
+dontaudit untrusted_app_30 proc_tty_drivers:file read;
+dontaudit untrusted_app_30 proc_version:file read;

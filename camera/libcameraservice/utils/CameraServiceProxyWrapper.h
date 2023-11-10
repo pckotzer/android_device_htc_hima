@@ -93,6 +93,7 @@ public:
 
     // Return the current top activity rotate and crop override.
     static int getRotateAndCropOverride(String16 packageName, int lensFacing, int userId);
+
 };
 
 } // android

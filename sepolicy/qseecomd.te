@@ -18,4 +18,6 @@ allow qseecomd self:capability {setuid setgid sys_rawio};
 allow qseecomd sysfs:file {open read getattr};
 allow qseecomd system_prop:property_service set;
 allow qseecomd time_daemon:unix_stream_socket connectto;
+allow qseecomd rpmb_device:blk_file ioctl;
+allow qseecomd rpmb_device:blk_file { ioctl };
 

@@ -27,6 +27,7 @@
 
 import /vendor/etc/init/hw/init.qcom.power.rc
 import /vendor/etc/init/hw/init.qcom.usb.rc
+import /vendor/etc/init/init.qti.fm.rc
 
 on early-init
     symlink /data/tombstones /tombstones
@@ -44,6 +45,7 @@ on init
     # start qseecomd early
     # vold needs keymaster for FDE
     start vendor.qseecomd
+    start vendor.keymaster-3-0
 
 on fs
     wait /dev/block/platform/soc.0/${ro.boot.bootdevice}
@@ -326,6 +328,29 @@ on boot
 
 # Services start here
 
+service bc /vendor/etc/init/hw/battery_cpu.rc
+    class main
+    user root
+    group root
+    oneshot
+
+service vendor.audio-hal /vendor/bin/hw/android.hardware.audio.service
+    override
+    class hal
+    user audioserver
+    # media gid needed for /dev/fm (radio) and for /data/misc/media (tee)
+    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct oem_2901 wakelock
+    capabilities BLOCK_SUSPEND
+    ioprio rt 4
+    # audioflinger restarts itself when it loses connection with the hal
+    # and its .rc file has an "onrestart restart audio-hal" rule, thus
+    # an additional auto-restart from the init process isn't needed.
+    oneshot
+    interface android.hardware.audio@6.0::IDevicesFactory default
+    interface android.hardware.audio@4.0::IDevicesFactory default
+    interface android.hardware.audio@2.0::IDevicesFactory default
+    onrestart restart audioserver
+
 service vendor.adsprpcd /vendor/bin/adsprpcd
     class main
     user media
@@ -430,7 +455,6 @@ service ppd /vendor/bin/mm-pp-daemon
     user system
     socket pps stream 0660 system system
     group system graphics
-    disabled
 
 service cameraserver /system/bin/cameraserver_hima
     override
@@ -452,6 +476,15 @@ on property:sys.boot_completed=1
     write /sys/block/mmcblk1/queue/read_ahead_kb 128
     # Tune LMK
     write /sys/module/lowmemorykiller/parameters/minfree "18432,23040,27648,32256,55296,80640"
+    # stop cameraserver
+    stop logd
+    stop logcat
+    stop tombstoned
+    stop traced
+    stop traced_probes
+    # stop vendor.qcamerasvr
+    # stop cameraserver_hima
+    start bc
 
 on property:persist.sys.ssr.enable_ramdumps=1
     write /sys/module/subsystem_restart/parameters/enable_ramdumps 1

@@ -1,0 +1,4 @@
+allow mm-qcamera-daemon default_prop:file read;
+allow mm-qcamera-daemon default_prop:file open;
+allow mm-qcamera-daemon default_prop:file { getattr open };
+

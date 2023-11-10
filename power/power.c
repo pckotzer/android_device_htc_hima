@@ -97,7 +97,6 @@ static int saved_interactive_mode = -1;
 static int slack_node_rw_failed = 0;
 static int display_hint_sent;
 static int sustained_performance_mode = 0;
-int display_boost;
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 static void power_init(struct power_module *module)
@@ -114,7 +113,6 @@ static void power_init(struct power_module *module)
         } else {
             int soc_id = atoi(buf);
             if (soc_id == 194 || (soc_id >= 208 && soc_id <= 218) || soc_id == 178) {
-                display_boost = 1;
             }
         }
         close(fd);
@@ -272,14 +270,14 @@ static void power_hint(struct power_module *module, power_hint_t hint,
             }
             pthread_mutex_unlock(&lock);
 
-            // little core freq bump for 1.5s
+            // little core freq bump for 100ms
             int resources[] = {0x20C};
-            int duration = 1500;
+            int duration = 100;
             static int handle_little = 0;
 
-            // big core freq bump for 500ms
+            // big core freq bump for 100ms
             int resources_big[] = {0x2312, 0x1F08};
-            int duration_big = 500;
+            int duration_big = 100;
             static int handle_big = 0;
 
             // sched_downmigrate lowered to 10 for 1s at most
@@ -365,19 +363,15 @@ static void power_hint(struct power_module *module, power_hint_t hint,
 
             pthread_mutex_lock(&lock);
             if (data && sustained_performance_mode == 0) {
-                int resources[] = {0x1509};
                 int duration = 0;
-                handle = interaction_with_handle(handle, duration,
-                                        sizeof(resources)/sizeof(resources[0]),
-                                        resources);
-                sysfs_write(GPU_MAX_FREQ_PATH, "305000000");
+                sysfs_write(GPU_MAX_FREQ_PATH, "390000000");
                 handle_hotplug = interaction_with_handle(handle_hotplug, duration,
                                     sizeof(resources_hotplug)/sizeof(resources_hotplug[0]),
                                     resources_hotplug);
                 sustained_performance_mode = 1;
             } else if (sustained_performance_mode == 1){
                 release_request(handle);
-                sysfs_write(GPU_MAX_FREQ_PATH, "600000000");
+                sysfs_write(GPU_MAX_FREQ_PATH, "660000000");
                 release_request(handle_hotplug);
                 sustained_performance_mode = 0;
            }

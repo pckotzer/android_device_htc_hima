@@ -2,6 +2,18 @@ dontaudit untrusted_app proc:file rw_file_perms;
 allow untrusted_app kgsl_debugfs: file r_file_perms;
 allow untrusted_app proc_stat:file r_file_perms;
 allow untrusted_app proc_version:file r_file_perms;
+allow untrusted_app proc_net:file read;
+allow untrusted_app proc_net_tcp_udp:file read;
+allow untrusted_app proc_net:file open;
+allow untrusted_app proc_net_tcp_udp:file open;
+allow untrusted_app self:netlink_route_socket bind;
+allow untrusted_app qemu_hw_prop:file read;
+allow untrusted_app qemu_sf_lcd_density_prop:file read;
+allow untrusted_app aac_drc_prop:file { getattr open };
+allow untrusted_app proc_net:file getattr;
+allow untrusted_app selinuxfs:file read;
+allow untrusted_app selinuxfs:file open;
+
 
 add_service(untrusted_app, color_display_service)
-
+get_prop(untrusted_app, userdebug_or_eng_prop)

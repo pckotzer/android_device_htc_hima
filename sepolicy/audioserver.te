@@ -1,5 +1,6 @@
-allow audioserver default_prop:file r_file_perms;
 allow audioserver dts_data_file:dir rw_dir_perms;
 allow audioserver dts_data_file:file create_file_perms;
-allow audioserver vendor_default_prop:file r_file_perms;
+# Allow ViPER4Android in enforcing mode.
+allow audioserver audioserver_tmpfs:file { read write execute };
+allow audioserver vendor_default_prop:file { getattr open read };
 

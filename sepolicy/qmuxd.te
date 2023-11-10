@@ -1,3 +1,0 @@
-allow qmuxd default_prop:file r_file_perms;
-allow qmuxd radio_prop:file r_file_perms;
-

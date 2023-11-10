@@ -1,2 +1,0 @@
-allow time_daemon default_prop:file r_file_perms;
-

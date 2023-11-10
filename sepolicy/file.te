@@ -10,6 +10,9 @@ type proc_swap, fs_type, proc_type;
 type rpm_stats_debug_file, file_type;
 type rmt_storage_debug_file, file_type;
 
+# charger
+type sysfs_fastcharger, sysfs_type, fs_type;
+
 # sysfs
 type sysfs_camera, sysfs_type, fs_type;
 type sysfs_camera_awb_cal, fs_type, sysfs_type;
